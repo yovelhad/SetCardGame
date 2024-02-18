@@ -1,6 +1,7 @@
 package bguspl.set.ex;
 
 import bguspl.set.Env;
+import java.util.ArrayBlockingQueue<E>
 
 /**
  * This class manages the players' threads and data
@@ -50,6 +51,18 @@ public class Player implements Runnable {
      */
     private int score;
 
+    //added fields
+    /** 
+     * The dealer of the game. needs to be notified when a player placed 3 tokens.,
+    */
+    private Dealer dealer;
+
+    /**
+     * Queue of tokens, size>0 if player can place tokens. if player removes tokens, queue.add(token)
+     * the values inside the items of the queue are not relevant
+     */
+    private Queue<boolean> queue = new ArrayBlockingQueue<boolean>(3);
+
     /**
      * The class constructor.
      *
@@ -64,6 +77,7 @@ public class Player implements Runnable {
         this.table = table;
         this.id = id;
         this.human = human;
+        this.dealer = dealer;
     }
 
     /**
@@ -114,6 +128,17 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
+        if(table.hasTokenInSlot(id, slot)){
+            table.removeToken(id,slot);
+            queue.add(true);
+        }
+        else{
+            table.placeToken(id,slot);
+            queue.remove();
+        }
+        if(queue.isEmpty()){
+            notifyDealer();
+        }
         // TODO implement
     }
 
@@ -139,5 +164,15 @@ public class Player implements Runnable {
 
     public int score() {
         return score;
+    }
+
+    //added methods
+
+    public void notifyDealer(){
+        synchronized(table) {
+            try {
+                table.notify();
+            }
+        }
     }
 }
