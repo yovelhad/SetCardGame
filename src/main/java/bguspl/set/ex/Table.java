@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Iterator;
+
 
 /**
  * This class contains the data that is visible to the player.
@@ -28,6 +31,13 @@ public class Table {
      * Mapping between a card and the slot it is in (null if none).
      */
     protected final Integer[] cardToSlot; // slot per card (if any)
+    
+    //added fields
+    /**
+      * HasMap used to map players and their tokens placement.
+      */
+    protected HashMap<Integer, List<Token>> playerToToken;
+    
 
     /**
      * Constructor for testing.
@@ -41,6 +51,8 @@ public class Table {
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
+        playerToToken = new HashMap<>();
+
     }
 
     /**
@@ -105,7 +117,9 @@ public class Table {
         try {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {}
-
+        int tempCard = slotToCard[slot];
+        slotToCard[slot] = null;
+        cardToSlot[tempCard] = null;
         // TODO implement
     }
 
@@ -115,7 +129,10 @@ public class Table {
      * @param slot   - the slot on which to place the token.
      */
     public void placeToken(int player, int slot) {
-        // TODO implement
+        Token myToken = new Token(player, slot);
+        playerToToken.get(player).add(myToken);
+        env.ui.placeToken(player, slot);
+    
     }
 
     /**
@@ -125,7 +142,46 @@ public class Table {
      * @return       - true iff a token was successfully removed.
      */
     public boolean removeToken(int player, int slot) {
-        // TODO implement
+
+        Token currentToken = new Token(player, slot);
+        List<Token> tokens = playerToToken.get(player);
+        Iterator<Token> iter = tokens.iterator();
+        while(iter.hasNext()){
+            Token token = iter.next();
+            if(token.equals(currentToken)){
+                tokens.remove(token);
+                return true;
+            }   
+        }
         return false;
+    }
+
+    //added methods
+    /**
+     * Checks if a player has a token in a specific slot.
+     */
+    public boolean hasTokenInSlot(int player, int slot){
+        List<Token> tokens = playerToToken.get(player);
+        for(Token token : tokens){
+            if(token.getSlot() == slot){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Finds the first empty slot in the table.
+     */
+    public int findFirstEmptySlot() {
+        for (int i = 0; i < slotToCard.length; i++) {
+            for (int j = 0; j< cardToSlot.length; j++){
+                if(slotToCard[i] == j && cardToSlot[j] == i){ //if the slot isnt empty
+                    return -1;
+                }
+                return i;
+            }
+        } 
+        return -1;  
     }
 }
