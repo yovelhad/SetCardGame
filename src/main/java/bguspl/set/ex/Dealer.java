@@ -27,6 +27,8 @@ public class Dealer implements Runnable {
      */
     private final List<Integer> deck;
 
+    private Object lock;
+
     /**
      * True iff game should be terminated.
      */
@@ -62,6 +64,10 @@ public class Dealer implements Runnable {
 
     /**
      * The inner loop of the dealer thread that runs as long as the countdown did not time out.
+     * 
+     * needs to add another theread that counts 60 seconds or goes to sleep for 60 second, together with reshuffle time, 
+     * this thread's job is to notify dealer that the reshuffle time has came because without him, dealer doesn't get notified
+     * that the time has passed.
      */
     private void timerLoop() {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
@@ -104,9 +110,18 @@ public class Dealer implements Runnable {
 
     /**
      * Sleep for a fixed amount of time or until the thread is awakened for some purpose.
+     * should be woken if: terminate, timeout reached, provoked by player
      */
     private void sleepUntilWokenOrTimeout() {
         // TODO implement
+
+        synchronized(table) {
+            try {
+                table.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -121,6 +136,8 @@ public class Dealer implements Runnable {
      */
     private void removeAllCardsFromTable() {
         // TODO implement
+
+        // shuffle should happen here
     }
 
     /**
