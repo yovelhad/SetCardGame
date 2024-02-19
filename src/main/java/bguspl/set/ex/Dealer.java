@@ -2,6 +2,9 @@ package bguspl.set.ex;
 
 import bguspl.set.Env;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -27,8 +30,6 @@ public class Dealer implements Runnable {
      */
     private final List<Integer> deck;
 
-    private Object lock;
-
     /**
      * True iff game should be terminated.
      */
@@ -38,6 +39,12 @@ public class Dealer implements Runnable {
      * The time when the dealer needs to reshuffle the deck due to turn timeout.
      */
     private long reshuffleTime = Long.MAX_VALUE;
+
+    //added fields
+
+    private Object lock;
+
+    public int[] slotsToRemove = new int[3];
 
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
@@ -98,6 +105,7 @@ public class Dealer implements Runnable {
      * Checks cards should be removed from the table and removes them.
      */
     private void removeCardsFromTable() {
+
         // TODO implement
     }
 
@@ -105,6 +113,17 @@ public class Dealer implements Runnable {
      * Check if any cards can be removed from the deck and placed on the table.
      */
     private void placeCardsOnTable() {
+        int cards = table.countCards();
+        if (cards < 12) {
+            int toPlace = Math.min(12 - cards, deck.size());
+            for (int i = 0; i < toPlace; i++) {
+                int card = deck.remove(0);
+                int firstEmptySlot = table.findFirstEmptySlot();
+                if(firstEmptySlot != -1) {
+                    table.placeCard(card, firstEmptySlot);
+                }
+            }
+        }
         // TODO implement
     }
 
@@ -114,7 +133,8 @@ public class Dealer implements Runnable {
      */
     private void sleepUntilWokenOrTimeout() {
         // TODO implement
-
+        //while(table.lock==true);
+        
         synchronized(table) {
             try {
                 table.wait();
@@ -135,6 +155,17 @@ public class Dealer implements Runnable {
      * Returns all the cards from the table to the deck.
      */
     private void removeAllCardsFromTable() {
+        for(int i = 0; i<table.slotToCard.length; i++){
+            if(table.slotToCard[i] != null){
+                deck.add(table.slotToCard[i]);
+                table.removeCard(i);
+            }
+        }
+        if(env.util.findSets(deck, 1).size() == 0){
+            terminate();
+        }
+        Collections.shuffle(deck);
+
         // TODO implement
 
         // shuffle should happen here
@@ -144,6 +175,48 @@ public class Dealer implements Runnable {
      * Check who is/are the winner/s and displays them.
      */
     private void announceWinners() {
-        // TODO implement
+        List<Player> winningPlayers = new ArrayList<>();
+        Player winningPlayer = players[0];
+        for(Player player: players){
+            if(player.score() > winningPlayer.score()){
+                winningPlayer = player;
+            }
+        }
+        for(Player player: players){
+            if(player.score() == winningPlayer.score()){
+                winningPlayers.add(player);
+            }
+        }
+        int[] winningPlayersArray = new int[winningPlayers.size()];
+        for(int i = 0; i < winningPlayers.size(); i++){
+            winningPlayersArray[i] = winningPlayers.get(i).id;
+        }
+        env.ui.announceWinner(winningPlayersArray);
+        terminate();
+    }
+
+    /**
+     * Notifies the dealer that a player placed 3 tokens.
+     *
+     * @param playerId - the id of the player that placed 3 tokens.
+     */
+    public void checkSet(Player player) {
+        int[] cards = new int[3];
+        int[] slots = new int[3];
+        int counter = 0;
+        List<Token> playerTokens = table.playerToToken.get(player.id) ;
+        for(Token token: playerTokens){
+            int slot = token.getSlot();
+            slots[counter] = slot;
+            int currCard = table.slotToCard[slot];
+            cards[counter] = currCard;
+            counter++;
+        }
+        if(env.util.testSet(cards)){
+            slotsToRemove = slots;
+            removeCardsFromTable();
+            player.point();
+        // player.playerThread.sleep(1000);
+        }
     }
 }
