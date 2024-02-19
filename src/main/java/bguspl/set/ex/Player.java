@@ -1,7 +1,8 @@
 package bguspl.set.ex;
 
 import bguspl.set.Env;
-import java.util.ArrayBlockingQueue<E>;
+
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * This class manages the players' threads and data
@@ -61,7 +62,7 @@ public class Player implements Runnable {
      * Queue of tokens, size>0 if player can place tokens. if player removes tokens, queue.add(token)
      * the values inside the items of the queue are not relevant
      */
-    private Queue<boolean> queue = new ArrayBlockingQueue<boolean>(3);
+    private ArrayBlockingQueue<Token> tokensQueue = new ArrayBlockingQueue<>(3);
 
     /**
      * The class constructor.
@@ -130,14 +131,14 @@ public class Player implements Runnable {
     public void keyPressed(int slot) {
         if(table.hasTokenInSlot(id, slot)){
             table.removeToken(id,slot);
-            queue.add(true);
+            tokensQueue.add(new Token(id));
         }
         else{
             table.placeToken(id,slot);
-            queue.remove();
+            tokensQueue.remove();
         }
-        if(queue.isEmpty()){
-            notifyDealer();
+        if(tokensQueue.isEmpty()){
+            notifyDealer(this);
         }
         // TODO implement
     }
@@ -150,8 +151,6 @@ public class Player implements Runnable {
      */
     public void point() {
         score++;
-        env.ui.setScore(id, score);
-        Thread.sleep(1000);
         // TODO implement
 
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
@@ -162,7 +161,6 @@ public class Player implements Runnable {
      * Penalize a player and perform other related actions.
      */
     public void penalty() {
-        Thread.sleep(3000);
         // TODO implement
     }
 
@@ -172,11 +170,9 @@ public class Player implements Runnable {
 
     //added methods
 
-    public void notifyDealer(){
-        synchronized(table) {
-            try {
-                table.notify();
-            }
-        }
+    public void notifyDealer(Player player){
+        table.notifyAll();
+        dealer.checkSet(this);
+
     }
 }
