@@ -105,6 +105,9 @@ public class Dealer implements Runnable {
      * Checks cards should be removed from the table and removes them.
      */
     private void removeCardsFromTable() {
+        for(int i = 0; i<slotsToRemove.length; i++){
+            table.removeCard(slotsToRemove[i]);
+        }
 
         // TODO implement
     }
@@ -124,7 +127,6 @@ public class Dealer implements Runnable {
                 }
             }
         }
-        // TODO implement
     }
 
     /**
@@ -216,7 +218,10 @@ public class Dealer implements Runnable {
             slotsToRemove = slots;
             removeCardsFromTable();
             player.point();
-        // player.playerThread.sleep(1000);
+            placeCardsOnTable();
+        }
+        else{
+            player.penalty();
         }
     }
 }
