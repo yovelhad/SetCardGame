@@ -3,6 +3,8 @@ package bguspl.set.ex;
 import bguspl.set.Env;
 
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.Random;
+
 
 /**
  * This class manages the players' threads and data
@@ -106,7 +108,15 @@ public class Player implements Runnable {
         aiThread = new Thread(() -> {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
-                // TODO implement player key press simulator
+                while(tokensQueue.remainingCapacity()==0){
+                    try{
+                        synchronized(this){
+                            wait();
+                        }
+                    }catch(InterruptedException ignored){}
+                }
+                int slot = simulateKeyPress();
+                keyPressed(slot);
                 try {
                     synchronized (this) { wait(); }
                 } catch (InterruptedException ignored) {}
@@ -120,7 +130,13 @@ public class Player implements Runnable {
      * Called when the game should be terminated.
      */
     public void terminate() {
-        // TODO implement
+        if(human){
+            playerThread.interrupt();
+        }
+        else{
+            aiThread.interrupt();
+        }
+        terminate = true;
     }
 
     /**
@@ -129,16 +145,18 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        if(table.hasTokenInSlot(id, slot)){
+        if(table.hasTokenInSlot(id, slot)){ //already has tokenin slot, so remove token
             table.removeToken(id,slot);
-            tokensQueue.add(new Token(id));
-        }
-        else{
-            table.placeToken(id,slot);
             tokensQueue.remove();
+            env.ui.removeToken(id, slot);
         }
-        if(tokensQueue.isEmpty()){
-            notifyDealer(this);
+        else{                               //doesnt have token there, place
+            table.placeToken(id,slot);
+            env.ui.placeToken(id, slot);
+            tokensQueue.add(new Token(id, slot));
+        }
+        if(tokensQueue.remainingCapacity()==0){ //if queue is full
+            notifyDealer();
         }
         // TODO implement
     }
@@ -151,16 +169,32 @@ public class Player implements Runnable {
      */
     public void point() {
         score++;
-        // TODO implement
+        try{
+            Thread.sleep(1000);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        env.ui.setScore(id, score);
+        env.ui.setFreeze(id, 1000);
+        Token newToken = new Token(id);
+        tokensQueue.add(newToken);
+        tokensQueue.add(newToken);
+        tokensQueue.add(newToken);
 
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
-        env.ui.setScore(id, ++score);
+
     }
 
     /**
      * Penalize a player and perform other related actions.
      */
     public void penalty() {
+        try{
+            Thread.sleep(3000);
+        } catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        env.ui.setFreeze(id, 3000);
         // TODO implement
     }
 
@@ -170,9 +204,23 @@ public class Player implements Runnable {
 
     //added methods
 
-    public void notifyDealer(Player player){
+    public synchronized void notifyDealer(){
+        //check if cards are still on table
+        for(Token currToken: tokensQueue){
+            if(!table.hasTokenInSlot(id, currToken.getSlot())){
+                return;
+            }
+        }
         table.notifyAll();
         dealer.checkSet(this);
 
+    }
+
+
+    private int simulateKeyPress(){
+        Random random = new Random();
+        int[] availableKeys = new int[env.config.tableSize];
+        int randomIndex = random.nextInt(availableKeys.length);
+        return randomIndex;
     }
 }

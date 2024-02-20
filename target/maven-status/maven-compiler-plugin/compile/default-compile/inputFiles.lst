@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /home/dorokabi/SetCardGame/SetCardGame/src/main/java/bguspl/set/UserInterface.java
 /home/dorokabi/SetCardGame/SetCardGame/src/main/java/bguspl/set/ex/Player.java
 /home/dorokabi/SetCardGame/SetCardGame/src/main/java/bguspl/set/Util.java
@@ -14,20 +13,3 @@
 /home/dorokabi/SetCardGame/SetCardGame/src/main/java/bguspl/set/ex/Table.java
 /home/dorokabi/SetCardGame/SetCardGame/src/main/java/bguspl/set/Config.java
 /home/dorokabi/SetCardGame/SetCardGame/src/main/java/bguspl/set/Main.java
-=======
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/Env.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/ThreadLogger.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/Main.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/UtilImpl.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/WindowManager.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/UserInterfaceSwing.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/ex/Table.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/Util.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/Config.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/UserInterface.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/ex/Player.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/UserInterfaceDecorator.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/ex/Dealer.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/ex/Token.java
-/home/yovelhad/Set_Card_Game/src/main/java/bguspl/set/InputManager.java
->>>>>>> e7a97a1eb1382a15c7cc7a04b60146fa0875f500
