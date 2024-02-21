@@ -176,10 +176,10 @@ public class Player implements Runnable {
         }
         env.ui.setScore(id, score);
         env.ui.setFreeze(id, 1000);
-        Token newToken = new Token(id);
-        tokensQueue.add(newToken);
-        tokensQueue.add(newToken);
-        tokensQueue.add(newToken);
+        //clears token queue
+        tokensQueue.remove();
+        tokensQueue.remove();
+        tokensQueue.remove();
 
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
 
@@ -193,6 +193,9 @@ public class Player implements Runnable {
             Thread.sleep(3000);
         } catch (InterruptedException e){
             e.printStackTrace();
+        }
+        if(!human){
+            tokensQueue.remove();
         }
         env.ui.setFreeze(id, 3000);
         // TODO implement
@@ -211,6 +214,14 @@ public class Player implements Runnable {
                 return;
             }
         }
+        while(table.blockingQueue.remainingCapacity()==0){
+            try{
+                this.wait();
+            }catch(InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        table.blockingQueue = tokensQueue;
         table.notifyAll();
         dealer.checkSet(this);
 
