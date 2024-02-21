@@ -89,12 +89,13 @@ public class Dealer implements Runnable {
      * Called when the game should be terminated.
      */
     public void terminate() {
+        //dealer's terminate should call all terminates.
         // TODO implement
     }
 
     /**
      * Check if the game should be terminated or the game end conditions are met.
-     *
+     *`
      * @return true iff the game should be finished.
      */
     private boolean shouldFinish() {
