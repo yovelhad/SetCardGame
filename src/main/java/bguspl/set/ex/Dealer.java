@@ -88,6 +88,10 @@ public class Dealer implements Runnable {
      * Called when the game should be terminated.
      */
     public void terminate() {
+        for(Player player: players){
+            player.terminate();
+        }
+        terminate = true;
         //dealer's terminate should call all terminates.
         // TODO implement
     }
@@ -107,6 +111,7 @@ public class Dealer implements Runnable {
     private void removeCardsFromTable() {
         for(int i = 0; i<slotsToRemove.length; i++){
             table.removeCard(slotsToRemove[i]);
+            env.ui.removeCard(slotsToRemove[i]);
         }
 
         // TODO implement
