@@ -207,24 +207,18 @@ public class Player implements Runnable {
 
     //added methods
 
-    public synchronized void notifyDealer(){
+    public void notifyDealer(){
         //check if cards are still on table
-        for(Token currToken: tokensQueue){
-            if(!table.hasTokenInSlot(id, currToken.getSlot())){
-                return;
+        synchronized(table.lock){
+            for(Token currToken: tokensQueue){
+                if(!table.hasTokenInSlot(id, currToken.getSlot())){
+                    return;
+                }
             }
+            table.blockingQueue = tokensQueue;
+            table.shouldDealerCheck = true;
+            dealer.checkSet(this);
         }
-        while(table.blockingQueue.remainingCapacity()==0){
-            try{
-                this.wait();
-            }catch(InterruptedException e){
-                e.printStackTrace();
-            }
-        }
-        table.blockingQueue = tokensQueue;
-        table.notifyAll();
-        dealer.checkSet(this);
-
     }
 
 
