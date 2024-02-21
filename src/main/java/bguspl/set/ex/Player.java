@@ -145,19 +145,21 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        if(table.hasTokenInSlot(id, slot)){ //already has tokenin slot, so remove token
-            table.removeToken(id,slot);
-            tokensQueue.remove();
-            env.ui.removeToken(id, slot);
+        if(!table.shouldDealerCheck){
+          if(table.hasTokenInSlot(id, slot)){ //already has token in slot, so remove token
+                table.removeToken(id,slot);
+                tokensQueue.remove();
+                env.ui.removeToken(id, slot);
+            }
+            else{                               //doesnt have token there, place
+                table.placeToken(id,slot);
+                env.ui.placeToken(id, slot);
+                tokensQueue.add(new Token(id, slot));
+            }
+            if(tokensQueue.remainingCapacity()==0){ //if queue is full
+                notifyDealer();
         }
-        else{                               //doesnt have token there, place
-            table.placeToken(id,slot);
-            env.ui.placeToken(id, slot);
-            tokensQueue.add(new Token(id, slot));
-        }
-        if(tokensQueue.remainingCapacity()==0){ //if queue is full
-            notifyDealer();
-        }
+    }
         // TODO implement
     }
 
@@ -217,7 +219,6 @@ public class Player implements Runnable {
             }
             table.blockingQueue = tokensQueue;
             table.shouldDealerCheck = true;
-            dealer.checkSet(this);
         }
     }
 
