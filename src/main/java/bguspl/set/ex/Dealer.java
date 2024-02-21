@@ -42,7 +42,6 @@ public class Dealer implements Runnable {
 
     //added fields
 
-    private Object lock;
 
     public int[] slotsToRemove = new int[3];
 
@@ -125,6 +124,7 @@ public class Dealer implements Runnable {
                 int firstEmptySlot = table.findFirstEmptySlot();
                 if(firstEmptySlot != -1) {
                     table.placeCard(card, firstEmptySlot);
+                    env.ui.placeCard(card, firstEmptySlot);
                 }
             }
         }
@@ -135,15 +135,17 @@ public class Dealer implements Runnable {
      * should be woken if: terminate, timeout reached, provoked by player
      */
     private void sleepUntilWokenOrTimeout() {
-        // TODO implement
-        //while(table.lock==true);
-        
-        synchronized(table) {
-            try {
-                table.wait();
-            } catch (InterruptedException e) {
+        while(!table.shouldDealerCheck){
+            try{
+                Thread.sleep(1000);
+                updateTimerDisplay(false);
+            }catch(InterruptedException e){
                 e.printStackTrace();
             }
+        }
+        for(Player currplayer: players){
+            if(currplayer.id==table.blockingQueue.peek().getPlayerId())
+            checkSet(currplayer);
         }
     }
 

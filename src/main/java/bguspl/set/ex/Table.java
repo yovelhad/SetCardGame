@@ -8,6 +8,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ArrayBlockingQueue;
+
 
 
 /**
@@ -37,7 +39,9 @@ public class Table {
       * HasMap used to map players and their tokens placement.
       */
     protected HashMap<Integer, List<Token>> playerToToken;
-    
+    public ArrayBlockingQueue<Token> blockingQueue = new ArrayBlockingQueue<>(3);
+    public Object lock;
+    public boolean shouldDealerCheck = false;
 
     /**
      * Constructor for testing.

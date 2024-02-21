@@ -145,19 +145,21 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        if(table.hasTokenInSlot(id, slot)){ //already has tokenin slot, so remove token
-            table.removeToken(id,slot);
-            tokensQueue.remove();
-            env.ui.removeToken(id, slot);
+        if(!table.shouldDealerCheck){
+          if(table.hasTokenInSlot(id, slot)){ //already has token in slot, so remove token
+                table.removeToken(id,slot);
+                tokensQueue.remove();
+                env.ui.removeToken(id, slot);
+            }
+            else{                               //doesnt have token there, place
+                table.placeToken(id,slot);
+                env.ui.placeToken(id, slot);
+                tokensQueue.add(new Token(id, slot));
+            }
+            if(tokensQueue.remainingCapacity()==0){ //if queue is full
+                notifyDealer();
         }
-        else{                               //doesnt have token there, place
-            table.placeToken(id,slot);
-            env.ui.placeToken(id, slot);
-            tokensQueue.add(new Token(id, slot));
-        }
-        if(tokensQueue.remainingCapacity()==0){ //if queue is full
-            notifyDealer();
-        }
+    }
         // TODO implement
     }
 
@@ -176,10 +178,10 @@ public class Player implements Runnable {
         }
         env.ui.setScore(id, score);
         env.ui.setFreeze(id, 1000);
-        Token newToken = new Token(id);
-        tokensQueue.add(newToken);
-        tokensQueue.add(newToken);
-        tokensQueue.add(newToken);
+        //clears token queue
+        tokensQueue.remove();
+        tokensQueue.remove();
+        tokensQueue.remove();
 
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
 
@@ -194,6 +196,9 @@ public class Player implements Runnable {
         } catch (InterruptedException e){
             e.printStackTrace();
         }
+        if(!human){
+            tokensQueue.remove();
+        }
         env.ui.setFreeze(id, 3000);
         // TODO implement
     }
@@ -204,16 +209,17 @@ public class Player implements Runnable {
 
     //added methods
 
-    public synchronized void notifyDealer(){
+    public void notifyDealer(){
         //check if cards are still on table
-        for(Token currToken: tokensQueue){
-            if(!table.hasTokenInSlot(id, currToken.getSlot())){
-                return;
+        synchronized(table.lock){
+            for(Token currToken: tokensQueue){
+                if(!table.hasTokenInSlot(id, currToken.getSlot())){
+                    return;
+                }
             }
+            table.blockingQueue = tokensQueue;
+            table.shouldDealerCheck = true;
         }
-        table.notifyAll();
-        dealer.checkSet(this);
-
     }
 
 
