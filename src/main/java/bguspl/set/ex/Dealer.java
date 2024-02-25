@@ -1,6 +1,7 @@
 package bguspl.set.ex;
 
 import bguspl.set.Env;
+import bguspl.set.ThreadLogger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,8 +58,19 @@ public class Dealer implements Runnable {
      */
     @Override
     public void run() {
-        env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
+       // env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
+        for(int i= 0; i< players.length; i++){
+            ThreadLogger dealerThread = new ThreadLogger(players[i], "player-" + (i+1), env.logger);
+            dealerThread.startWithLog();
+        }
+//        for(Player player : players){
+//          //player.initialThread();
+//          //player.start();
+//
+//        }
+
         while (!shouldFinish()) {
+            Collections.shuffle(deck);
             placeCardsOnTable();
             timerLoop();
             updateTimerDisplay(false);
@@ -76,11 +88,12 @@ public class Dealer implements Runnable {
      * that the time has passed.
      */
     private void timerLoop() {
+        updateTimerDisplay(true);
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-            removeCardsFromTable();
-            placeCardsOnTable();
+//            removeCardsFromTable();
+//            placeCardsOnTable();
         }
     }
 
@@ -156,8 +169,11 @@ public class Dealer implements Runnable {
      * Reset and/or update the countdown and the countdown display.
      */
     private void updateTimerDisplay(boolean reset) {
-        
-        // TODO implement
+        if (reset) {
+            reshuffleTime = System.currentTimeMillis() + env.config.turnTimeoutMillis;
+        }
+        long currentTime = reshuffleTime - System.currentTimeMillis();
+        env.ui.setCountdown(currentTime,currentTime < env.config.turnTimeoutWarningMillis);
     }
 
     /**
@@ -173,7 +189,7 @@ public class Dealer implements Runnable {
         if(env.util.findSets(deck, 1).size() == 0){
             terminate();
         }
-        Collections.shuffle(deck);
+
 
         // TODO implement
 
@@ -226,6 +242,7 @@ public class Dealer implements Runnable {
             removeCardsFromTable();
             player.point();
             placeCardsOnTable();
+            updateTimerDisplay(true);
         }
         else{
             player.penalty();

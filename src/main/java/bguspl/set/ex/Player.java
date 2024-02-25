@@ -2,6 +2,8 @@ package bguspl.set.ex;
 
 import bguspl.set.Env;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.Random;
 
@@ -81,6 +83,7 @@ public class Player implements Runnable {
         this.id = id;
         this.human = human;
         this.dealer = dealer;
+        table.playerToToken.put(id, new ArrayList<Token>());
     }
 
     /**
@@ -89,10 +92,11 @@ public class Player implements Runnable {
     @Override
     public void run() {
         playerThread = Thread.currentThread();
-        env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
+        //env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
         if (!human) createArtificialIntelligence();
 
         while (!terminate) {
+
             // TODO implement main player loop
             // 1. wait for a key press
             // 2. call keyPressed with the slot number
@@ -160,11 +164,9 @@ public class Player implements Runnable {
                 table.removeToken(id,slot);
                 tokensQueue.remove();
                 env.ui.removeToken(id, slot);
-            }
-            else{                               //doesnt have token there, place
-                table.placeToken(id,slot);
-                env.ui.placeToken(id, slot);
-                tokensQueue.add(new Token(id, slot));
+            } else {                               //doesnt have token there, place
+                Token newToken = table.placeToken(id,slot);
+                tokensQueue.add(newToken);
             }
             if(tokensQueue.remainingCapacity()==0){ //if queue is full
                 notifyDealer();
@@ -220,7 +222,7 @@ public class Player implements Runnable {
 
     public void notifyDealer(){
         //check if cards are still on table
-        synchronized(table.lock){
+        synchronized(table){
             for(Token currToken: tokensQueue){
                 if(!table.hasTokenInSlot(id, currToken.getSlot())){
                     return;
@@ -237,5 +239,14 @@ public class Player implements Runnable {
         int[] availableKeys = new int[env.config.tableSize];
         int randomIndex = random.nextInt(availableKeys.length);
         return randomIndex;
+    }
+
+    public void initialThread(){
+        if(human){
+            playerThread = new Thread();
+        }
+        else{
+            aiThread = new Thread();
+        }
     }
 }

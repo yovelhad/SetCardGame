@@ -133,11 +133,11 @@ public class Table {
      * @param player - the player the token belongs to.
      * @param slot   - the slot on which to place the token.
      */
-    public void placeToken(int player, int slot) {
+    public Token placeToken(int player, int slot) {
         Token myToken = new Token(player, slot);
         playerToToken.get(player).add(myToken);
         env.ui.placeToken(player, slot);
-    
+        return myToken;
     }
 
     /**
@@ -166,13 +166,15 @@ public class Table {
      * Checks if a player has a token in a specific slot.
      */
     public boolean hasTokenInSlot(int player, int slot){
-        List<Token> tokens = playerToToken.get(player);
-        for(Token token : tokens){
-            if(token.getSlot() == slot){
-                return true;
-            }
-        }
-        return false;
+//        List<Token> tokens = playerToToken.get(player);
+////        for(Token token : tokens){
+////            if(token.getSlot() == slot){
+////                return true;
+////            }
+////        }
+//       // return tokens.contains(slot);
+////        return false;
+        return playerToToken.get(player).contains(slot);
     }
 
     /**
