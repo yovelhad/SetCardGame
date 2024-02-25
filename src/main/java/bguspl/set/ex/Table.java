@@ -109,7 +109,7 @@ public class Table {
 
         cardToSlot[card] = slot;
         slotToCard[slot] = card;
-
+        env.ui.placeCard(card, slot);
         // TODO implement
     }
 
@@ -124,6 +124,7 @@ public class Table {
         int tempCard = slotToCard[slot];
         slotToCard[slot] = null;
         cardToSlot[tempCard] = null;
+        env.ui.removeCard(slot);
         // TODO implement
     }
 

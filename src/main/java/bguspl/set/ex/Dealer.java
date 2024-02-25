@@ -111,7 +111,6 @@ public class Dealer implements Runnable {
     private void removeCardsFromTable() {
         for(int i = 0; i<slotsToRemove.length; i++){
             table.removeCard(slotsToRemove[i]);
-            env.ui.removeCard(slotsToRemove[i]);
         }
 
         // TODO implement
@@ -129,7 +128,6 @@ public class Dealer implements Runnable {
                 int firstEmptySlot = table.findFirstEmptySlot();
                 if(firstEmptySlot != -1) {
                     table.placeCard(card, firstEmptySlot);
-                    env.ui.placeCard(card, firstEmptySlot);
                 }
             }
         }
@@ -158,6 +156,7 @@ public class Dealer implements Runnable {
      * Reset and/or update the countdown and the countdown display.
      */
     private void updateTimerDisplay(boolean reset) {
+        
         // TODO implement
     }
 
