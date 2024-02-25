@@ -28,3 +28,5 @@ buildNumber.properties
 ##############################
 *.log
 *.lck
+
+*:Zone.Identifier
