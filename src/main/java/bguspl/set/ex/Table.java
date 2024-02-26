@@ -109,7 +109,7 @@ public class Table {
 
         cardToSlot[card] = slot;
         slotToCard[slot] = card;
-
+        env.ui.placeCard(card, slot);
         // TODO implement
     }
 
@@ -124,6 +124,7 @@ public class Table {
         int tempCard = slotToCard[slot];
         slotToCard[slot] = null;
         cardToSlot[tempCard] = null;
+        env.ui.removeCard(slot);
         // TODO implement
     }
 
@@ -179,12 +180,15 @@ public class Table {
      */
     public int findFirstEmptySlot() {
         for (int i = 0; i < slotToCard.length; i++) {
-            for (int j = 0; j< cardToSlot.length; j++){
-                if(slotToCard[i] == j && cardToSlot[j] == i){ //if the slot isnt empty
-                    return -1;
+       //     for (int j = 0; j< cardToSlot.length; j++){
+                if (slotToCard[i] == null ) {
+                    return i;
                 }
-                return i;
-            }
+                // if(slotToCard[i] == j && cardToSlot[j] == i){ //if the slot isnt empty
+                //     return -1;
+                // }
+                // return i;
+      //      }
         } 
         return -1;  
     }

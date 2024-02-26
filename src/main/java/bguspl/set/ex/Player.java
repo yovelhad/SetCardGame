@@ -94,6 +94,16 @@ public class Player implements Runnable {
 
         while (!terminate) {
             // TODO implement main player loop
+            // 1. wait for a key press
+            // 2. call keyPressed with the slot number
+            // 3. if the queue of tokens is full, call notifyDealer
+            // 4. if the game is over, terminate the thread
+            // 5. if the game is not over, repeat
+            
+
+
+
+
         }
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
@@ -179,10 +189,9 @@ public class Player implements Runnable {
         env.ui.setScore(id, score);
         env.ui.setFreeze(id, 1000);
         //clears token queue
-        tokensQueue.remove();
-        tokensQueue.remove();
-        tokensQueue.remove();
-
+        if(!tokensQueue.isEmpty()){
+            tokensQueue.clear();
+        }
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
 
     }

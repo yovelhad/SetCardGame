@@ -1,9 +1,0 @@
-[18:09:36.939] [INFO   ] thread main starting.
-[18:09:36.963] [SEVERE ] cannot read configuration file config.properties trying from resources.
-[18:09:36.969] [SEVERE ] configuration file was loaded from resources directory.
-[18:09:39.928] [INFO   ] thread dealer starting.
-[18:09:39.929] [INFO   ] thread dealer starting.
-[18:09:39.978] [INFO   ] thread dealer terminated.
-[18:09:44.980] [SEVERE ] thanks for playing... it was fun!
-[18:09:44.982] [INFO   ] thread main terminated.
-[18:09:44.982] [SEVERE ] disposing of user interface elements
