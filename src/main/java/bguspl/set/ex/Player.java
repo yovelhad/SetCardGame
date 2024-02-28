@@ -3,7 +3,6 @@ package bguspl.set.ex;
 import bguspl.set.Env;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.Random;
 
@@ -66,7 +65,12 @@ public class Player implements Runnable {
      * Queue of tokens, size>0 if player can place tokens. if player removes tokens, queue.add(token)
      * the values inside the items of the queue are not relevant
      */
-    private ArrayBlockingQueue<Token> tokensQueue = new ArrayBlockingQueue<>(3);
+    public ArrayBlockingQueue<Integer> keyPressQueue = new ArrayBlockingQueue<>(3);
+
+    public ArrayBlockingQueue<Integer> myTokensQueue = new ArrayBlockingQueue<>(3);
+
+
+    private long delay = -1;
 
     /**
      * The class constructor.
@@ -83,7 +87,8 @@ public class Player implements Runnable {
         this.id = id;
         this.human = human;
         this.dealer = dealer;
-        table.playerToToken.put(id, new ArrayList<Token>());
+       // table.playerToToken.put(id, new ArrayList<Token>());
+        table.playerToToken.put(id, new ArrayList<Integer>());
     }
 
     /**
@@ -91,24 +96,29 @@ public class Player implements Runnable {
      */
     @Override
     public void run() {
+        System.out.println("shalom");
         playerThread = Thread.currentThread();
-        //env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
+        env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
         if (!human) createArtificialIntelligence();
-
         while (!terminate) {
+            if(delay == 3000){
+                penalty();
+            }
+            else if(delay == 1000){
+                point();
+            }
+            else if(!keyPressQueue.isEmpty()){
+                Integer slot = null;
+                try {
+                    slot = keyPressQueue.take();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
-            // TODO implement main player loop
-            // 1. wait for a key press
-            // 2. call keyPressed with the slot number
-            // 3. if the queue of tokens is full, call notifyDealer
-            // 4. if the game is over, terminate the thread
-            // 5. if the game is not over, repeat
-            
-
-
-
-
+                placeToken(slot);
+            }
         }
+
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
     }
@@ -122,7 +132,7 @@ public class Player implements Runnable {
         aiThread = new Thread(() -> {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
-                while(tokensQueue.remainingCapacity()==0){
+                while(keyPressQueue.remainingCapacity()==0){
                     try{
                         synchronized(this){
                             wait();
@@ -159,21 +169,16 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        if(!table.shouldDealerCheck){
-          if(table.hasTokenInSlot(id, slot)){ //already has token in slot, so remove token
-                table.removeToken(id,slot);
-                tokensQueue.remove();
-                env.ui.removeToken(id, slot);
-            } else {                               //doesnt have token there, place
-                Token newToken = table.placeToken(id,slot);
-                tokensQueue.add(newToken);
+        if(delay == -1 && keyPressQueue.remainingCapacity() != 0) {
+            try {
+                this.keyPressQueue.add(slot);
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
             }
-            if(tokensQueue.remainingCapacity()==0){ //if queue is full
-                notifyDealer();
         }
-    }
         // TODO implement
     }
+
 
     /**
      * Award a point to a player and perform other related actions.
@@ -184,16 +189,21 @@ public class Player implements Runnable {
     public void point() {
         score++;
         try{
-            Thread.sleep(1000);
+            env.ui.setFreeze(id, env.config.pointFreezeMillis);
+            Thread.sleep(env.config.pointFreezeMillis);
+            if(!human){
+                Thread.sleep(env.config.pointFreezeMillis);
+            }
         }catch (InterruptedException e){
             e.printStackTrace();
         }
         env.ui.setScore(id, score);
-        env.ui.setFreeze(id, 1000);
+        env.ui.setFreeze(id, 0);
         //clears token queue
-        if(!tokensQueue.isEmpty()){
-            tokensQueue.clear();
+        if(!myTokensQueue.isEmpty()){
+            myTokensQueue.clear();
         }
+        delay = -1;
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
 
     }
@@ -202,15 +212,24 @@ public class Player implements Runnable {
      * Penalize a player and perform other related actions.
      */
     public void penalty() {
-        try{
-            Thread.sleep(3000);
-        } catch (InterruptedException e){
-            e.printStackTrace();
+
+        for(long penaltyTimeCountdown = env.config.penaltyFreezeMillis; penaltyTimeCountdown>=0; penaltyTimeCountdown=penaltyTimeCountdown-1000) {
+            try {
+                Thread.sleep(env.config.pointFreezeMillis);
+                if (!human) {
+                    Thread.sleep(env.config.pointFreezeMillis);
+                }
+                env.ui.setFreeze(id, penaltyTimeCountdown);
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+        env.ui.setFreeze(id, 0);
         if(!human){
-            tokensQueue.remove();
+            myTokensQueue.remove();
         }
-        env.ui.setFreeze(id, 3000);
+        delay = -1;
         // TODO implement
     }
 
@@ -220,17 +239,43 @@ public class Player implements Runnable {
 
     //added methods
 
-    public void notifyDealer(){
-        //check if cards are still on table
-        synchronized(table){
-            for(Token currToken: tokensQueue){
-                if(!table.hasTokenInSlot(id, currToken.getSlot())){
-                    return;
+    /**
+     * @pre slotsQueue is not empty
+     */
+    public void placeToken(Integer slot){
+
+        if(!table.shouldDealerCheck){
+            if(myTokensQueue.contains(slot)){ //already has token in slot, so remove token
+                // Token toRemove = new Token(id,slot);
+                table.removeToken(id,slot);
+                myTokensQueue.remove(slot);
+            }else if (myTokensQueue.remainingCapacity() != 0){
+                try{
+                    myTokensQueue.add(slot);
+                    table.placeToken(id, slot);
+                }catch (IllegalStateException e){
+                    System.out.println("kalba");
                 }
             }
-            table.blockingQueue = tokensQueue;
-            table.shouldDealerCheck = true;
+            if(myTokensQueue.remainingCapacity()==0){ //if queue is full
+                notifyDealer();
+            }
         }
+
+    }
+
+    public void notifyDealer(){
+        //check if cards are still on table
+        ArrayBlockingQueue<Token> toCheckQueue = new ArrayBlockingQueue<>(3);
+        for(Integer currToken: myTokensQueue){
+            toCheckQueue.add(new Token(id,currToken));
+            //check if the cards I placed tokens on are still on the table
+            if(!table.hasTokenInSlot(id, currToken)){
+                return;
+            }
+        }
+        table.setCheckQueue = toCheckQueue;
+        table.shouldDealerCheck = true;
     }
 
 
@@ -241,12 +286,15 @@ public class Player implements Runnable {
         return randomIndex;
     }
 
-    public void initialThread(){
-        if(human){
-            playerThread = new Thread();
-        }
-        else{
-            aiThread = new Thread();
-        }
+//    public void initialThread(){
+//        playerThread = new Thread();
+//
+//        if(!human){
+//            aiThread = new Thread();
+//        }
+//    }
+
+    public void setDelay(long i) {
+        delay = i;
     }
 }

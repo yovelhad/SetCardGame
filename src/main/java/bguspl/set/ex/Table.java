@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 
 
@@ -38,10 +37,11 @@ public class Table {
     /**
       * HasMap used to map players and their tokens placement.
       */
-    protected HashMap<Integer, List<Token>> playerToToken;
-    public ArrayBlockingQueue<Token> blockingQueue = new ArrayBlockingQueue<>(3);
+   // protected HashMap<Integer, List<Token>> playerToToken;
+    protected HashMap<Integer, List<Integer>> playerToToken = new HashMap<>();
+    public ArrayBlockingQueue<Token> setCheckQueue = new ArrayBlockingQueue<>(3);
     public Object lock;
-    public boolean shouldDealerCheck = false;
+    public Boolean shouldDealerCheck = false;
 
     /**
      * Constructor for testing.
@@ -55,7 +55,7 @@ public class Table {
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
-        playerToToken = new HashMap<>();
+//         playerToToken = new HashMap<>();
 
     }
 
@@ -135,7 +135,7 @@ public class Table {
      */
     public Token placeToken(int player, int slot) {
         Token myToken = new Token(player, slot);
-        playerToToken.get(player).add(myToken);
+        playerToToken.get(player).add(slot);
         env.ui.placeToken(player, slot);
         return myToken;
     }
@@ -147,18 +147,21 @@ public class Table {
      * @return       - true iff a token was successfully removed.
      */
     public boolean removeToken(int player, int slot) {
-
-        Token currentToken = new Token(player, slot);
-        List<Token> tokens = playerToToken.get(player);
-        Iterator<Token> iter = tokens.iterator();
-        while(iter.hasNext()){
-            Token token = iter.next();
-            if(token.equals(currentToken)){
-                tokens.remove(token);
-                return true;
-            }   
-        }
-        return false;
+        //Token toRemoveToken = new Token(player, slot);
+        //return playerToToken.get(player).remove(toRemoveToken);
+        env.ui.removeToken(player,slot);
+        return playerToToken.get(player).remove((Integer)slot);
+//        Token toRemoveToken = new Token(player, slot);
+//        List<Token> tokens = playerToToken.get(player);
+//        Iterator<Token> iter = tokens.iterator();
+//        while(iter.hasNext()){
+//            Token currToken = iter.next();
+//            if(currToken.getSlot() == toRemoveToken.getSlot()){
+//                playerToToken.get(player).remove(currToken);
+//                return true;
+//            }
+//        }
+//        return false;
     }
 
     //added methods
@@ -166,15 +169,16 @@ public class Table {
      * Checks if a player has a token in a specific slot.
      */
     public boolean hasTokenInSlot(int player, int slot){
-//        List<Token> tokens = playerToToken.get(player);
-////        for(Token token : tokens){
-////            if(token.getSlot() == slot){
-////                return true;
-////            }
-////        }
-//       // return tokens.contains(slot);
-////        return false;
-        return playerToToken.get(player).contains(slot);
+//        List<Integer> tokens = playerToToken.get(player);
+//        for(Integer currSlot : tokens){
+//            if(currSlot == slot){
+//                return true;
+//            }
+//        }
+//        //return tokens.contains(slot);
+//        return false;
+////        Token tokenToFind = new Token(player,slot);
+       return playerToToken.get(player).contains(slot);
     }
 
     /**
