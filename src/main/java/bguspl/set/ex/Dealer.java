@@ -44,7 +44,6 @@ public class Dealer implements Runnable {
 
     public Integer[] slotsToRemove = new Integer[3];
 
-    private List<Thread> runningPlayersThread = new ArrayList<Thread>();
 
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
@@ -59,13 +58,8 @@ public class Dealer implements Runnable {
     @Override
     public void run() {
         env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
-//        for(int i= 0; i< players.length; i++){
-//            ThreadLogger dealerThread = new ThreadLogger(players[i], "player-" + (i+1), env.logger);
-//            dealerThread.startWithLog();
-//        }
         for(int i= 0; i< players.length; i++){
             Thread playerT= new Thread(players[i],"player-" + (i+1));
-            runningPlayersThread.add(playerT);
             playerT.start();
         }
         while (!shouldFinish()) {
@@ -77,19 +71,11 @@ public class Dealer implements Runnable {
         }
         announceWinners();
         terminate();
-//        for (Thread playerThread : runningPlayersThread) {
-//            try {
-//                playerThread.join();
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
     }
 
     /**
      * The inner loop of the dealer thread that runs as long as the countdown did not time out.
-     *
      * needs to add another thread that counts 60 seconds or goes to sleep for 60 second, together with reshuffle time,
      * this thread's job is to notify dealer that the reshuffle time has came because without him, dealer doesn't get notified
      * that the time has passed.
@@ -100,7 +86,6 @@ public class Dealer implements Runnable {
             updateTimerDisplay(false);
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-//            removeCardsFromTable();
             placeCardsOnTable();
         }
     }
@@ -109,9 +94,6 @@ public class Dealer implements Runnable {
      * Called when the game should be terminated.
      */
     public void terminate() {
-//        for (Thread playerThread : runningPlayersThread) {
-//            playerThread.interrupt();
-//        }
         for (Player player: players)
         {
             player.terminate();
@@ -177,8 +159,14 @@ public class Dealer implements Runnable {
         if(!terminate) {
             while (!table.shouldDealerCheck && System.currentTimeMillis() < reshuffleTime) {
                 try {
-                    Thread.sleep(1000);
-                    updateTimerDisplay(false);
+                    if(reshuffleTime - System.currentTimeMillis() > env.config.turnTimeoutWarningMillis){
+                        Thread.sleep(900);
+                        updateTimerDisplay(false);
+                    }
+                    else{
+                        Thread.sleep(100);
+                        updateTimerDisplay(false);
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -202,13 +190,6 @@ public class Dealer implements Runnable {
      * Reset and/or update the countdown and the countdown display.
      */
     private void updateTimerDisplay(boolean reset) {
-//        if(!terminate) {
-//            if (reset) {
-//                reshuffleTime = System.currentTimeMillis() + env.config.turnTimeoutMillis;
-//            }
-//            long currentTime = (Math.round(reshuffleTime - System.currentTimeMillis()) + 1000);
-//            env.ui.setCountdown(currentTime, currentTime < env.config.turnTimeoutWarningMillis);
-//        }
         long timerDisplay = 0 ;
         if(reset) {
             reshuffleTime = System.currentTimeMillis() + env.config.turnTimeoutMillis;
@@ -312,12 +293,6 @@ public class Dealer implements Runnable {
 
     private void removeTokensFromPlayer() {
         for (Player currPlayer : players) {
-//            for(int i =0 ; i< slotsToRemove.length ; i++ ){
-//                currPlayer.myTokensQueue.remove(slotsToRemove[i]);
-//                table.removeToken(currPlayer.id,slotsToRemove[i]);
-//                slotsToRemove[i] = -1;
-//
-//            }
             for (Integer currSlotToRemove : slotsToRemove) {
                 if (currSlotToRemove != null) {
                     currPlayer.myTokensQueue.remove(currSlotToRemove);
