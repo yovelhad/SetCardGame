@@ -201,6 +201,7 @@ public class Dealer implements Runnable {
         env.ui.setCountdown(timerDisplay, timerDisplay < env.config.turnTimeoutWarningMillis);
     }
 
+
     /**
      * Returns all the cards from the table to the deck.
      */
