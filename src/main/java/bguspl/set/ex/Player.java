@@ -89,7 +89,7 @@ public class Player implements Runnable {
         this.dealer = dealer;
        // table.playerToToken.put(id, new ArrayList<Token>());
         if(table.playerToToken != null) {
-            table.playerToToken.put(id, new ArrayList<Integer>());
+            table.playerToToken.put(id, new ArrayList<>());
         }
     }
 
@@ -264,6 +264,9 @@ public class Player implements Runnable {
         //check if cards are still on table
         ArrayBlockingQueue<Token> toCheckQueue = new ArrayBlockingQueue<>(3);
         for(Integer currToken: myTokensQueue){
+            if(table.slotToCard[currToken] == null){
+                return;
+            }
             toCheckQueue.add(new Token(id,currToken));
             //check if the cards I placed tokens on are still on the table
             if(!table.hasTokenInSlot(id, currToken)){

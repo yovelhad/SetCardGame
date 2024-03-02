@@ -37,7 +37,7 @@ public class Table {
     /**
       * HasMap used to map players and their tokens placement.
       */
-    protected HashMap<Integer, List<Integer>> playerToToken = new HashMap<>();
+    protected HashMap<Integer, List<Integer>> playerToToken;
     public ArrayBlockingQueue<Token> setCheckQueue = new ArrayBlockingQueue<>(3);
     public Boolean shouldDealerCheck = false;
 
@@ -119,10 +119,12 @@ public class Table {
         try {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {}
-        int tempCard = slotToCard[slot];
-        slotToCard[slot] = null;
-        cardToSlot[tempCard] = null;
-        env.ui.removeCard(slot);
+        if(slotToCard[slot] != null) {
+            int tempCard = slotToCard[slot];
+            slotToCard[slot] = null;
+            cardToSlot[tempCard] = null;
+            env.ui.removeCard(slot);
+        }
         // TODO implement
     }
 

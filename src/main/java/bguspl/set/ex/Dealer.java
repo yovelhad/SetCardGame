@@ -174,7 +174,7 @@ public class Dealer implements Runnable {
             if (table.shouldDealerCheck) {
                 synchronized (table.shouldDealerCheck) {
                     for (Player currplayer : players) {
-                        if (currplayer.id == table.setCheckQueue.peek().getPlayerId()) {
+                        if (table.setCheckQueue.peek() != null && currplayer.id == table.setCheckQueue.peek().getPlayerId()) {
                             checkSet(currplayer);
                             break;
                         }
@@ -222,14 +222,12 @@ public class Dealer implements Runnable {
 
         // TODO implement
 
-        // shuffle should happen here
     }
 
     /**
      * Check who is/are the winner/s and displays them.
      */
     private void announceWinners() {
-        if(!terminate) {
             List<Player> winningPlayers = new ArrayList<>();
             Player winningPlayer = players[0];
             for (Player player : players) {
@@ -247,7 +245,6 @@ public class Dealer implements Runnable {
                 winningPlayersArray[i] = winningPlayers.get(i).id;
             }
             env.ui.announceWinner(winningPlayersArray);
-        }
     }
 
     /**
