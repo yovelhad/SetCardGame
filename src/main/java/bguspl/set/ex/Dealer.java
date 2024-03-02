@@ -99,6 +99,7 @@ public class Dealer implements Runnable {
             player.terminate();
         }
         terminate = true;
+        Thread.currentThread().interrupt();
         //dealer's terminate should call all terminates.
         // TODO implement
     }
