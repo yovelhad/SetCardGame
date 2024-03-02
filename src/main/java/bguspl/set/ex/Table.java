@@ -37,10 +37,8 @@ public class Table {
     /**
       * HasMap used to map players and their tokens placement.
       */
-   // protected HashMap<Integer, List<Token>> playerToToken;
     protected HashMap<Integer, List<Integer>> playerToToken = new HashMap<>();
     public ArrayBlockingQueue<Token> setCheckQueue = new ArrayBlockingQueue<>(3);
-    //public Object lock;
     public Boolean shouldDealerCheck = false;
 
     /**
@@ -147,21 +145,8 @@ public class Table {
      * @return       - true iff a token was successfully removed.
      */
     public boolean removeToken(int player, int slot) {
-        //Token toRemoveToken = new Token(player, slot);
-        //return playerToToken.get(player).remove(toRemoveToken);
         env.ui.removeToken(player,slot);
         return playerToToken.get(player).remove((Integer)slot);
-//        Token toRemoveToken = new Token(player, slot);
-//        List<Token> tokens = playerToToken.get(player);
-//        Iterator<Token> iter = tokens.iterator();
-//        while(iter.hasNext()){
-//            Token currToken = iter.next();
-//            if(currToken.getSlot() == toRemoveToken.getSlot()){
-//                playerToToken.get(player).remove(currToken);
-//                return true;
-//            }
-//        }
-//        return false;
     }
 
     //added methods
@@ -169,15 +154,6 @@ public class Table {
      * Checks if a player has a token in a specific slot.
      */
     public boolean hasTokenInSlot(int player, int slot){
-//        List<Integer> tokens = playerToToken.get(player);
-//        for(Integer currSlot : tokens){
-//            if(currSlot == slot){
-//                return true;
-//            }
-//        }
-//        //return tokens.contains(slot);
-//        return false;
-////        Token tokenToFind = new Token(player,slot);
        return playerToToken.get(player).contains(slot);
     }
 
@@ -186,15 +162,9 @@ public class Table {
      */
     public int findFirstEmptySlot() {
         for (int i = 0; i < slotToCard.length; i++) {
-       //     for (int j = 0; j< cardToSlot.length; j++){
                 if (slotToCard[i] == null ) {
                     return i;
                 }
-                // if(slotToCard[i] == j && cardToSlot[j] == i){ //if the slot isnt empty
-                //     return -1;
-                // }
-                // return i;
-      //      }
         } 
         return -1;  
     }

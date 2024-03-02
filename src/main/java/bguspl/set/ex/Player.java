@@ -137,18 +137,6 @@ public class Player implements Runnable {
                 if (!table.shouldDealerCheck) {
                     keyPressed(slot);
                 }
-//                while(keyPressQueue.remainingCapacity()==0){
-//                    try{
-//                        synchronized(this){
-//                            wait();
-//                        }
-//                    }catch(InterruptedException ignored){}
-//                }
-//                int slot = simulateKeyPress();
-//                keyPressed(slot);
-//                try {
-//                    synchronized (this) { wait(); }
-//                } catch (InterruptedException ignored) {}
             }
             env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
         }, "computer-" + id);
@@ -256,7 +244,6 @@ public class Player implements Runnable {
 
         if(!table.shouldDealerCheck){
             if(myTokensQueue.contains(slot)){ //already has token in slot, so remove token
-                // Token toRemove = new Token(id,slot);
                 table.removeToken(id,slot);
                 myTokensQueue.remove(slot);
             }else if (myTokensQueue.remainingCapacity() != 0){
