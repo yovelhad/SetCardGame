@@ -88,7 +88,9 @@ public class Player implements Runnable {
         this.human = human;
         this.dealer = dealer;
        // table.playerToToken.put(id, new ArrayList<Token>());
-        table.playerToToken.put(id, new ArrayList<Integer>());
+        if(table.playerToToken != null) {
+            table.playerToToken.put(id, new ArrayList<Integer>());
+        }
     }
 
     /**
@@ -96,7 +98,6 @@ public class Player implements Runnable {
      */
     @Override
     public void run() {
-        System.out.println("shalom");
         playerThread = Thread.currentThread();
         env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
         if (!human) createArtificialIntelligence();
@@ -132,18 +133,22 @@ public class Player implements Runnable {
         aiThread = new Thread(() -> {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
-                while(keyPressQueue.remainingCapacity()==0){
-                    try{
-                        synchronized(this){
-                            wait();
-                        }
-                    }catch(InterruptedException ignored){}
+                Integer slot = simulateKeyPress();
+                if (!table.shouldDealerCheck) {
+                    keyPressed(slot);
                 }
-                int slot = simulateKeyPress();
-                keyPressed(slot);
-                try {
-                    synchronized (this) { wait(); }
-                } catch (InterruptedException ignored) {}
+//                while(keyPressQueue.remainingCapacity()==0){
+//                    try{
+//                        synchronized(this){
+//                            wait();
+//                        }
+//                    }catch(InterruptedException ignored){}
+//                }
+//                int slot = simulateKeyPress();
+//                keyPressed(slot);
+//                try {
+//                    synchronized (this) { wait(); }
+//                } catch (InterruptedException ignored) {}
             }
             env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
         }, "computer-" + id);
@@ -154,13 +159,18 @@ public class Player implements Runnable {
      * Called when the game should be terminated.
      */
     public void terminate() {
-        if(human){
-            playerThread.interrupt();
+        keyPressQueue.clear();
+        myTokensQueue.clear();
+        terminate = true;
+        try {
+            playerThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        else{
+        if(!human){
             aiThread.interrupt();
         }
-        terminate = true;
+
     }
 
     /**
@@ -227,7 +237,7 @@ public class Player implements Runnable {
         }
         env.ui.setFreeze(id, 0);
         if(!human){
-            myTokensQueue.remove();
+            dealer.removerTokensFromPlayer(this);
         }
         delay = -1;
         // TODO implement
@@ -254,7 +264,6 @@ public class Player implements Runnable {
                     myTokensQueue.add(slot);
                     table.placeToken(id, slot);
                 }catch (IllegalStateException e){
-                    System.out.println("kalba");
                 }
             }
             if(myTokensQueue.remainingCapacity()==0){ //if queue is full
@@ -286,13 +295,6 @@ public class Player implements Runnable {
         return randomIndex;
     }
 
-//    public void initialThread(){
-//        playerThread = new Thread();
-//
-//        if(!human){
-//            aiThread = new Thread();
-//        }
-//    }
 
     public void setDelay(long i) {
         delay = i;

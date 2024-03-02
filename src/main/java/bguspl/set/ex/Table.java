@@ -40,7 +40,7 @@ public class Table {
    // protected HashMap<Integer, List<Token>> playerToToken;
     protected HashMap<Integer, List<Integer>> playerToToken = new HashMap<>();
     public ArrayBlockingQueue<Token> setCheckQueue = new ArrayBlockingQueue<>(3);
-    public Object lock;
+    //public Object lock;
     public Boolean shouldDealerCheck = false;
 
     /**
@@ -55,7 +55,7 @@ public class Table {
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
-//         playerToToken = new HashMap<>();
+        playerToToken = new HashMap<>();
 
     }
 
